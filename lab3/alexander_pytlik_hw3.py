@@ -1,4 +1,4 @@
-'''
+"""
 --------------------------------------------------------------------------------
 G e n e r a l I n f o r m a t i o n
 --------------------------------------------------------------------------------
@@ -17,8 +17,10 @@ Auxiliary Files: None
 Special Instructions: None
 
 --------------------------------------------------------------------------------
-'''
+"""
+
 import sys
+import calendar as cal
 import matplotlib.pylab as plt
 import numpy as np
 
@@ -35,6 +37,13 @@ import numpy as np
 # 5) sort the data by month so we can average it and take the standard deviation later
 # 6) Plot the results
 
+def convert_date(date):
+    year = date[0:4]
+    month = cal.month_abbr[int(date[4:6].lstrip("0"))]
+    day = date[6:8]
+
+    return year, month, day
+
 
 def parse_data(infile):
     """
@@ -43,25 +52,63 @@ def parse_data(infile):
     :return: two lists. One list with the information from the third column (date)
                         One list with the information from the fourth column (temperature)
     """
-    wdates = []             # list of dates data
-    wtemperatures = []      # list of temperarture data
+    weather_dates = []     # list of dates data
+    weather_temp = []      # list of temperarture data
 
-    return wdates, wtemperatures
+    # Opens file for reading then closes
+    with open(infile, mode='r') as file:
+        file.readline()  # Removes first line of the file
+
+        # Loops through each line
+        for line in file:
+            recs = line.split()  # Splits the line into columns
+            year, month, day = convert_date(recs[2])
+            weather_dates.append(month + " " + day + " " + year)  # Stores the date into a list
+            weather_temp.append(recs[3])  # Stores the temp into a list
+
+    return weather_dates, weather_temp  # Returns both list
 
 
-def calc_mean_std_dev(wdates, wtemp):
+def calc_mean_std_dev(weather_dates, weather_temp):
     """
     Calculate the mean temperature per month
     Calculate the standard deviation per month's mean
-    :param wdates: dictionary with dates fields
-    :param wtemp: temperature per month
+    :param weather_dates: dictionary with dates fields
+    :param weather_temp: temperature per month
     :return: means, std_dev: months_mean and std_dev lists
     """
-    means = []
-    std_dev = []
+    month_mean = {}  # List of month means data
 
-    return means, std_dev
+    # List of each month standard deviation data
+    month_std = {"Jan": [], "Feb": [], "Mar": [], "Apr": [], "May": [], "Jun": [],
+                 "Jul": [], "Aug": [], "Sep": [], "Oct": [], "Nov": [], "Dec": []}
 
+    mean = []
+    current_date = None
+    count = 0
+    for date in weather_dates:
+        if current_date != date[0:3] + " " + date[7:11]:
+            current_date = date[0:3] + " " + date[7:11]
+
+            if len(mean) != 0:
+                month_mean[date[0:3] + " " + date[7:11]] = sum(mean)/len(mean)
+                count = 0
+            else:
+                mean.append(float(weather_temp[count]))
+                count += 1
+        else:
+            mean.append(float(weather_temp[count]))
+            count += 1
+
+    for key in month_mean:
+        month = key[0:3]
+
+        month_std[month].append(float(month_mean[key]))
+
+    for std in month_std:
+        month_std[std] = np.std(month_std.get(std))
+
+    return month_mean, month_std
 
 
 def plot_data_task1(wyear, wtemp, month_mean, month_std):
@@ -106,20 +153,20 @@ def plot_data_task2(xxx):
 
 def main(infile):
     weather_data = infile    # take data file as input parameter to file
-    wdates, wtemperatures = parse_data(weather_data)
+    weather_dates, weather_temp = parse_data(weather_data)
     # Calculate mean and standard dev per month
-    month_mean, month_std = calc_mean_std_dev(wdates, wtemperatures)
+    month_mean, month_std = calc_mean_std_dev(weather_dates, weather_temp)
     # TODO: Make sure you have a list of:
     #       1) years, 2) temperature, 3) month_mean, 4) month_std
-    plot_data_task1(wyear, wtemp, month_mean, month_std)
+
+    plot_data_task1(weather_dates, weather_temp, month_mean, month_std)
     # TODO: Create the data you need for this
     # plot_data_task2(xxx)
 
 
-
 if __name__ == "__main__":
-    # infile = 'data/CDO6674605799016.txt'  # for testing
+    infile = 'data/CDO6674605799016.txt'  # for testing
     # Note: the 0th argument is the program itself.
-    infile = sys.argv[1]
+    # infile = input("Please enter in the location and name of the weather data file: ")
     main(infile)
     exit(0)
