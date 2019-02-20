@@ -49,6 +49,37 @@ def convert_date(date):
     return year, month, day
 
 
+def get_max_min(years, weather_max, weather_min):
+    year = []
+    max_temp = []
+    min_temp = []
+
+    current_year = years[0]
+    current_max = weather_max[0]
+    current_min = weather_min[0]
+    count = 0
+
+    for y in years:
+        if current_year != y:
+            year.append(current_year)
+            max_temp.append(current_max)
+            min_temp.append(current_min)
+
+            current_year = y
+            current_max = weather_max[count]
+            current_min = weather_min[count]
+
+        if current_max < weather_max[count] != 9999.9:
+            current_max = weather_max[count]
+
+        if current_min > weather_min[count] != 9999.9:
+            current_min = weather_min[count]
+
+        count += 1
+
+    return year, max_temp, min_temp
+
+
 def parse_data(infile):
     """
     Function to parse weather data
@@ -57,7 +88,9 @@ def parse_data(infile):
                         One list with the information from the fourth column (temperature)
     """
     weather_dates = []  # list of dates data
-    weather_temp = []  # list of temperarture data
+    weather_temp = []  # list of temperature data
+    weather_max = []
+    weather_min = []
 
     # Opens file for reading then closes
     with open(infile, mode='r') as file:
@@ -69,8 +102,10 @@ def parse_data(infile):
             year, month, day = convert_date(recs[2])
             weather_dates.append(month + " " + day + " " + year)  # Stores the date into a list
             weather_temp.append(float(recs[3]))  # Stores the temp into a list
+            weather_max.append(float(recs[17]))
+            weather_min.append(float(recs[18]))
 
-    return weather_dates, weather_temp  # Returns both list
+    return weather_dates, weather_temp, weather_max, weather_min  # Returns both list
 
 
 def calc_mean_std_dev(weather_dates, weather_temp):
@@ -95,7 +130,7 @@ def calc_mean_std_dev(weather_dates, weather_temp):
     for date in weather_dates:
         if current_date != date[0:3] + " " + date[7:11]:
             if len(tmp) != 0:
-                month[current_date[0:3]].append(sum(tmp)/len(tmp))
+                month[current_date[0:3]].append(sum(tmp) / len(tmp))
                 tmp = []
 
             tmp.append(float(weather_temp[count]))
@@ -147,34 +182,38 @@ def plot_data_task1(wyear, wtemp, month_mean, month_std):
     plt.show()  # display plot
 
 
-def plot_data_task2(xxx):
+def plot_data_task2(year, max_temp, min_temp):
     """
     Create plot for Task 2. Describe in here what you are plotting
     Also modify the function to take the params you think you will need
     to plot the requirements.
     :param: xxx??
     """
-    pass
+    plt.figure()
+    plt.title("High and Low Temperature of Each Year")
+    p1 = plt.plot(year, max_temp, "ro")
+    p2 = plt.plot(year, min_temp, "bo")
+    plt.ylabel("Temperature, F")
+    plt.xlabel("Year")
+    plt.legend((p1[0], p2[0]), ('Maximum Temp', 'Minimum Temp'), loc='lower right')
+    plt.show()
 
 
 def main(infile):
     weather_data = infile  # take data file as input parameter to file
-    weather_dates, weather_temp = parse_data(weather_data)
+    weather_dates, weather_temp, weather_max, weather_min = parse_data(weather_data)
     # Calculate mean and standard dev per month
     month_mean, month_std = calc_mean_std_dev(weather_dates, weather_temp)
 
     years = []
 
-    for year in weather_dates:
-        years.append(float(year[7:11]))
+    for y in weather_dates:
+        years.append(float(y[7:11]))
 
-    years = np.asarray(years)
-    weather_temp = np.asarray(weather_temp)
-    month_mean = np.asarray(list(month_mean.values()))
-    month_std = np.asarray(list(month_std.values()))
+    year, max_temp, min_temp = get_max_min(years, weather_max, weather_min)
 
-    plot_data_task1(years, weather_temp, month_mean, month_std)
-    # plot_data_task2(xxx)
+    plot_data_task1(years, weather_temp, list(month_mean.values()), list(month_std.values()))
+    plot_data_task2(year, max_temp, min_temp)
 
 
 if __name__ == "__main__":
