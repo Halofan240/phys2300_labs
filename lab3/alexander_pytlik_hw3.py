@@ -68,7 +68,7 @@ def parse_data(infile):
             recs = line.split()  # Splits the line into columns
             year, month, day = convert_date(recs[2])
             weather_dates.append(month + " " + day + " " + year)  # Stores the date into a list
-            weather_temp.append(recs[3])  # Stores the temp into a list
+            weather_temp.append(float(recs[3]))  # Stores the temp into a list
 
     return weather_dates, weather_temp  # Returns both list
 
@@ -96,7 +96,6 @@ def calc_mean_std_dev(weather_dates, weather_temp):
         if current_date != date[0:3] + " " + date[7:11]:
             if len(tmp) != 0:
                 month[current_date[0:3]].append(sum(tmp)/len(tmp))
-                current_date = date[0:3] + " " + date[7:11]
                 tmp = []
 
             tmp.append(float(weather_temp[count]))
@@ -126,11 +125,12 @@ def plot_data_task1(wyear, wtemp, month_mean, month_std):
     plt.figure()
     plt.subplot(2, 1, 1)  # select first subplot
     plt.title("Temperatures at Ogden")
-    plt.plot(wyear, wtemp, "bo")
+    l = plt.plot(wyear, wtemp, "bo")
     plt.ylabel("Temperature, F")
     plt.xlabel("Decimal Year")
     plt.xlim(1970, 2015)
     plt.ylim(-20, 100)
+    plt.setp(l, markerfacecolor='C0')
 
     plt.subplot(2, 1, 2)  # select second subplot
     plt.ylabel("Temperature, F")
@@ -143,6 +143,7 @@ def plot_data_task1(wyear, wtemp, month_mean, month_std):
     plt.bar(monthNumber, month_mean, yerr=month_std, width=width,
             color="lightgreen", ecolor="black", linewidth=1.5)
     plt.xticks(monthNumber, months)
+    plt.yticks(np.arange(0, 100, 10))
     plt.show()  # display plot
 
 
@@ -165,7 +166,7 @@ def main(infile):
     years = []
 
     for year in weather_dates:
-        years.append(int(year[7:11]))
+        years.append(float(year[7:11]))
 
     years = np.asarray(years)
     weather_temp = np.asarray(weather_temp)
@@ -173,7 +174,6 @@ def main(infile):
     month_std = np.asarray(list(month_std.values()))
 
     plot_data_task1(years, weather_temp, month_mean, month_std)
-    # TODO: Create the data you need for this
     # plot_data_task2(xxx)
 
 
