@@ -4,10 +4,10 @@ Assignment to learn how to interpolate data1
 import sys
 
 
-# import matplotlib.pyplot as plt
-# import numpy as np
-# import scipy
-# import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy
+import pandas as pd
 
 # https://youtu.be/-zvHQXnBO6c
 
@@ -20,7 +20,17 @@ def read_wx_data(wx_file, harbor_data):
     :param harbor_data: A dictionary to collect data.
     :return: Nothing
     """
-    pass
+
+    # Opens file for reading then closes
+    with open(wx_file, mode='r') as file:
+        file.readline()  # Removes first line of the file
+
+        # Loops through each line
+        for line in file:
+            recs = line.split()  # Splits the line into columns
+
+
+    return
 
 
 def read_gps_data(gps_file, harbor_data):
