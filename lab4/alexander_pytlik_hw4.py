@@ -2,12 +2,11 @@
 Assignment to learn how to interpolate data1
 '''
 import sys
+from datetime import datetime as dt
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
-import pandas as pd
-from datetime import datetime as dt
+from scipy.interpolate import interp1d
 
 
 # https://youtu.be/-zvHQXnBO6c
@@ -93,16 +92,26 @@ def interpolate_wx_from_gps(harbor_data):
     harbor_data["alt_down"] = []
     harbor_data["temp_down"] = []
 
-    pass
+    x = np.linspace(0, harbor_data["gps_times"][-1], num=len(harbor_data["wx_times"]))
+    inter_altitude = interp1d(harbor_data["gps_times"], harbor_data["gps_altitude"], fill_value="extrapolate")
+    wx_alt = inter_altitude(x)
+
+    current_alt = 0
+    pos = 0
+
+    for i in wx_alt:
+        if i > current_alt:
+            harbor_data["alt_up"].append(i)
+            harbor_data["temp_up"].append(harbor_data["wx_temperatures"][pos])
+            current_alt = i
+        elif i < current_alt:
+            harbor_data["alt_down"].append(i)
+            harbor_data["temp_down"].append(harbor_data["wx_temperatures"][pos])
+            current_alt = i
+        pos += 1
 
 
-def plot_figs(harbor_data):
-    """
-    Plot 2 figures with 2 subplots each.
-    :param harbor_data: A dictionary to collect data.
-    :return: nothing
-    """
-
+def match_time(harbor_data):
     gps_max_hour = harbor_data["gps_times"][len(harbor_data["gps_times"]) - 1]
     count = 0
 
@@ -112,7 +121,15 @@ def plot_figs(harbor_data):
             del harbor_data["wx_temperatures"][count:]
         count += 1
 
-    fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, sharex="all")
+
+def plot_figs(harbor_data):
+    """
+    Plot 2 figures with 2 subplots each.
+    :param harbor_data: A dictionary to collect data.
+    :return: nothing
+    """
+
+    fig1, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, sharex="all")
     ax1.set_title("Harbor Flight Data")
     ax1.plot(harbor_data["wx_times"], harbor_data["wx_temperatures"], "b-")
     ax1.set_ylabel("Temperature, F")
@@ -122,7 +139,18 @@ def plot_figs(harbor_data):
     ax2.set_xlabel("Mission Elapsed Time, Hours")
     ax2.plot(harbor_data["gps_times"], harbor_data["gps_altitude"], "b-")
     ax2.set_xlim(0, 2.5)
-    fig.show()  # display plot
+
+    fig2, (ax3, ax4) = plt.subplots(nrows=1, ncols=2, sharey="all")
+    ax3.set_ylabel("Altitude, ft")
+    ax3.set_xlabel("temp")
+    ax3.plot(harbor_data["temp_up"], harbor_data["alt_up"], "b-")
+    ax3.set_xlim(-40, 80)
+
+    ax4.set_xlabel("temp")
+    ax4.plot(harbor_data["temp_down"], harbor_data["alt_down"], "b-")
+    ax4.set_xlim(-60, 120)
+
+    plt.show()  # display plot
 
 
 def main():
@@ -138,6 +166,7 @@ def main():
 
     read_wx_data(wx_file, harbor_data)  # collect weather data
     read_gps_data(gps_file, harbor_data)  # collect gps data
+    match_time(harbor_data)  # matches time between gps and temp
     interpolate_wx_from_gps(harbor_data)  # calculate interpolated data
     plot_figs(harbor_data)  # display figures
 
