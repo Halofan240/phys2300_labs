@@ -106,9 +106,6 @@ def interpolate_wx_from_gps(harbor_data):
 
     # Loops through wx_alt and separates the values into increasing altitude and decreasing altitude
     for i in wx_alt:
-        h = harbor_data["wx_temperatures"][pos]
-        if pos == 2226:
-            print("hi")
         if i > current_alt:
             harbor_data["alt_up"].append(i)
             harbor_data["temp_up"].append(harbor_data["wx_temperatures"][pos])
@@ -126,6 +123,7 @@ def interpolate_wx_from_gps(harbor_data):
             current_temp = harbor_data["wx_temperatures"][pos]
         pos += 1
 
+    d = 3
     """
     Below is my attempt at trying to correct the graph with correct values
     """
