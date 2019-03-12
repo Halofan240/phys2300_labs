@@ -6,7 +6,7 @@ from datetime import datetime as dt
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import interp1d
+import scipy.interpolate as ip
 
 
 # https://youtu.be/-zvHQXnBO6c
@@ -93,22 +93,62 @@ def interpolate_wx_from_gps(harbor_data):
     harbor_data["temp_down"] = []
 
     x = np.linspace(0, harbor_data["gps_times"][-1], num=len(harbor_data["wx_times"]))
-    inter_altitude = interp1d(harbor_data["gps_times"], harbor_data["gps_altitude"], fill_value="extrapolate")
+    inter_altitude = ip.interp1d(harbor_data["gps_times"], harbor_data["gps_altitude"], fill_value="extrapolate")
     wx_alt = inter_altitude(x)
 
     current_alt = 0
+    current_temp = 0
     pos = 0
 
     for i in wx_alt:
+        h = harbor_data["wx_temperatures"][pos]
         if i > current_alt:
             harbor_data["alt_up"].append(i)
             harbor_data["temp_up"].append(harbor_data["wx_temperatures"][pos])
+            current_temp = harbor_data["wx_temperatures"][pos]
             current_alt = i
-        elif i < current_alt:
+        elif i < current_alt and harbor_data["wx_temperatures"][pos] <= current_temp + 10:
             harbor_data["alt_down"].append(i)
             harbor_data["temp_down"].append(harbor_data["wx_temperatures"][pos])
+            current_temp = harbor_data["wx_temperatures"][pos]
             current_alt = i
         pos += 1
+
+    h = 3
+    # i_count = 0
+    # j_count = 0
+    # current_alt = 0
+    # for i in harbor_data["wx_times"]:
+    #
+    #     for j in harbor_data["gps_times"]:
+    #         if i == j:
+    #             if harbor_data["gps_altitude"][j_count] >= current_alt:
+    #                 harbor_data["alt_up"].append(harbor_data["gps_altitude"][j_count])
+    #                 harbor_data["temp_up"].append(harbor_data["wx_temperatures"][i_count])
+    #                 current_alt = harbor_data["gps_altitude"][j_count]
+    #             elif harbor_data["gps_altitude"][j_count] <= current_alt:
+    #                 harbor_data["alt_down"].append(harbor_data["gps_altitude"][j_count])
+    #                 harbor_data["temp_down"].append(harbor_data["wx_temperatures"][i_count])
+    #                 current_alt = harbor_data["gps_altitude"][j_count]
+    #         j_count += 1
+    #     i_count += 1
+    #     j_count = 0
+    #
+    # x1 = np.linspace(min(harbor_data["alt_up"]), max(harbor_data["alt_up"]), num=len(harbor_data["wx_temperatures"]), endpoint=True)
+    # x2 = np.linspace(min(harbor_data["alt_down"]), max(harbor_data["alt_down"]), num=len(harbor_data["wx_temperatures"]), endpoint=True)
+    #
+    # for i in harbor_data["wx_temperatures"]:
+    #     pass
+    #
+    # interp_up = ip.interp1d(harbor_data["alt_up"], harbor_data["temp_up"], fill_value="extrapolate")
+    # interp_down = ip.interp1d(harbor_data["alt_down"], harbor_data["temp_down"], fill_value="extrapolate")
+    #
+    #
+    #
+    # harbor_data["temp_up"] = interp_up(x1)
+    # harbor_data["temp_down"] = interp_down(x2)
+    # harbor_data["alt_up"] = x1
+    # harbor_data["alt_down"] = np.flip(x2)
 
 
 def match_time(harbor_data):
@@ -140,7 +180,7 @@ def plot_figs(harbor_data):
     ax2.plot(harbor_data["gps_times"], harbor_data["gps_altitude"], "b-")
     ax2.set_xlim(0, 2.5)
 
-    fig2, (ax3, ax4) = plt.subplots(nrows=1, ncols=2, sharey="all")
+    fig2, (ax3, ax4) = plt.subplots(nrows=1, ncols=2)
     ax3.set_ylabel("Altitude, ft")
     ax3.set_xlabel("temp")
     ax3.plot(harbor_data["temp_up"], harbor_data["alt_up"], "b-")
@@ -149,6 +189,17 @@ def plot_figs(harbor_data):
     ax4.set_xlabel("temp")
     ax4.plot(harbor_data["temp_down"], harbor_data["alt_down"], "b-")
     ax4.set_xlim(-60, 120)
+    # ax4.invert_yaxis()
+
+    # ax3.set_ylabel("Altitude, ft")
+    # ax3.set_xlabel("Temperature, F")
+    # ax3.plot(harbor_data["temp_up"], harbor_data["alt_up"], "b-")
+    ax3.set_xticks(np.arange(-40, 100, 20))
+
+    # ax4.set_xlabel("Temperature, F")
+    # ax4.plot(harbor_data["temp_down"], harbor_data["alt_down"], "b-")
+    ax4.set_xticks(np.arange(-60, 120, 20))
+
 
     plt.show()  # display plot
 
