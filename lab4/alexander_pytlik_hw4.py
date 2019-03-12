@@ -106,6 +106,9 @@ def interpolate_wx_from_gps(harbor_data):
 
     # Loops through wx_alt and separates the values into increasing altitude and decreasing altitude
     for i in wx_alt:
+        h = harbor_data["wx_temperatures"][pos]
+        if pos == 2226:
+            print("hi")
         if i > current_alt:
             harbor_data["alt_up"].append(i)
             harbor_data["temp_up"].append(harbor_data["wx_temperatures"][pos])
@@ -116,6 +119,11 @@ def interpolate_wx_from_gps(harbor_data):
             harbor_data["temp_down"].append(harbor_data["wx_temperatures"][pos])
             current_temp = harbor_data["wx_temperatures"][pos]
             current_alt = i
+        else:
+            del harbor_data["wx_temperatures"][pos]
+            del harbor_data["wx_times"][pos]
+            pos -= 1
+            current_temp = harbor_data["wx_temperatures"][pos]
         pos += 1
 
     """
@@ -199,12 +207,12 @@ def plot_figs(harbor_data):
     ax3.set_ylabel("Altitude, ft")
     ax3.set_xlabel("temp")
     ax3.plot(harbor_data["temp_up"], harbor_data["alt_up"], "b-")
-    a#x3.set_xlim(-40, 80)
+    # #x3.set_xlim(-40, 80)
     ax3.set_xticks(np.arange(-40, 100, 20))
 
     ax4.set_xlabel("temp")
     ax4.plot(harbor_data["temp_down"], harbor_data["alt_down"], "b-")
-    #ax4.set_xlim(-60, 120)
+    # ax4.set_xlim(-60, 120)
     ax4.set_xticks(np.arange(-60, 120, 20))
     # ax4.invert_yaxis()
 
@@ -216,13 +224,13 @@ def plot_figs(harbor_data):
     # ax3.set_ylabel("Altitude, ft")
     # ax3.set_xlabel("Temperature, F")
     # ax3.plot(harbor_data["temp_up"], harbor_data["alt_up"], "b-")
-    #ax3.set_xticks(np.arange(-40, 100, 20))
+    # ax3.set_xticks(np.arange(-40, 100, 20))
     #
     # ax4.set_xlabel("Temperature, F")
     # ax4.plot(harbor_data["temp_down"], harbor_data["alt_down"], "b-")
-    #ax4.set_xticks(np.arange(-60, 120, 20))
+    # ax4.set_xticks(np.arange(-60, 120, 20))
     #
-    #plt.show()  # display plot
+    # plt.show()  # display plot
 
 
 def main():
