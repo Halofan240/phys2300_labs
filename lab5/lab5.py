@@ -1,6 +1,8 @@
 from vpython import *
 from math import sin, cos
 import argparse
+import sys
+import time as t
 
 
 def set_scene(data):
@@ -23,13 +25,34 @@ def motion_no_drag(data):
     """
     Create animation for projectile motion with no dragging force
     """
-    ball_nd = sphere(pos=vector(-25, data['init_height'], 0),
-                     radius=1, color=color.cyan, make_trail=True)
+    ball_nd = sphere(radius=1, color=color.cyan, make_trail=True)
     # Follow the movement of the ball
     scene.camera.follow(ball_nd)
+
     # Set initial velocity & position
+    ball_nd.velocity = vector(20, data['init_velocity'], 0)  # Ball velocity
+    ball_nd.pos = vector(-25, data['init_height'], 0)  # Ball position
+
+    time = 0  # Starting Time
+    force = data['ball_mass'] * data['gravity']  # Force of ball
+    acceleration = vector(0, force / data['ball_mass'], 0)  # Acceleration of ball
 
     # Animate
+    while ball_nd.pos.y >= 0:
+        rate(1000)
+
+        ball_nd.velocity = ball_nd.velocity + acceleration * data['deltat']
+        ball_nd.pos = ball_nd.pos + ball_nd.velocity * data['deltat']
+
+        time += data['deltat']
+
+
+
+
+
+
+
+
 
 
 def motion_drag(data):
@@ -46,9 +69,9 @@ def main():
     # 1) Parse the arguments
     parser = argparse.ArgumentParser(description='Projectile Motion Demo')
 
-    parser.add_argument('--velocity', help='--velocity 20', required=True)
-    parser.add_argument('--angle', help='--angle 45', required=True)
-    parser.add_argument('--height', nargs='?', default=1.2, help='--height 1.2')
+    parser.add_argument('--velocity', type=float, help='--velocity 20', required=True)
+    parser.add_argument('--angle', type=float, help='--angle 45', required=True)
+    parser.add_argument('--height', type=float, nargs='?', default=1.2, help='--height 1.2')
 
     args = parser.parse_args()
 
@@ -61,7 +84,7 @@ def main():
     # Constants
     data['rho'] = 1.225  # kg/m^3
     data['Cd'] = 0.5  # coefficient friction
-    data['delta'] = 0.005
+    data['deltat'] = 0.005
     data['gravity'] = -9.8  # m/s^2
 
     data['ball_mass'] = 0.145  # kg
@@ -69,18 +92,18 @@ def main():
     data['ball_area'] = pi * data['ball_radius'] ** 2
     data['alpha'] = data['rho'] * data['Cd'] * data['ball_area'] / 2.0
     data['beta'] = data['alpha'] / data['ball_mass']
+
     # Set Scene
-
-
-#    set_scene(data)
-# 2) No Drag Animation
-#    motion_no_drag(data)
-# 3) Drag Animation
-#     motion_drag(data)
-# 4) Plot Information: extra credit
-#     plot_data(data)
+    set_scene(data)
+    # 2) No Drag Animation
+    motion_no_drag(data)
+    # 3) Drag Animation
+    #     motion_drag(data)
+    # 4) Plot Information: extra credit
+    #     plot_data(data)
 
 
 if __name__ == "__main__":
     main()
-    exit(0)
+    t.sleep(10)
+    sys.exit(0)
