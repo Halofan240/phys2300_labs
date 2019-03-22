@@ -1,8 +1,9 @@
-from vpython import *
-from math import sin, cos
 import argparse
 import sys
 import time as t
+from math import sin, cos
+
+from vpython import *
 
 
 def set_scene(data):
