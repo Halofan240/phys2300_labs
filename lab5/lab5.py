@@ -29,37 +29,64 @@ def motion_no_drag(data):
     # Follow the movement of the ball
     scene.camera.follow(ball_nd)
 
-    # Set initial velocity & position
-    ball_nd.velocity = vector(20, data['init_velocity'], 0)  # Ball velocity
-    ball_nd.pos = vector(-25, data['init_height'], 0)  # Ball position
-
+    deltat = data['deltat']
+    mass = data['ball_mass']
+    theta = radians(data['theta'])
     time = 0  # Starting Time
-    force = data['ball_mass'] * data['gravity']  # Force of ball
-    acceleration = vector(0, force / data['ball_mass'], 0)  # Acceleration of ball
+    velocity = data['init_velocity']
+
+    # Set initial velocity & position
+    ball_nd.velocity = vector(velocity * cos(theta),  # Initial X velocity
+                              velocity * sin(theta), 0)  # Initial Y velocity
+    ball_nd.pos = vector(-25, data['init_height'], 0)  # Initial ball position
+    force = mass * data['gravity']  # Force of ball
+    acceleration = vector(0, force / mass, 0)  # Acceleration of ball
 
     # Animate
     while ball_nd.pos.y >= 0:
         rate(1000)
 
-        ball_nd.velocity = ball_nd.velocity + acceleration * data['deltat']
-        ball_nd.pos = ball_nd.pos + ball_nd.velocity * data['deltat']
+        ball_nd.velocity = ball_nd.velocity + acceleration * deltat
+        ball_nd.pos = ball_nd.pos + ball_nd.velocity * deltat
 
-        time += data['deltat']
-
-
-
-
-
-
-
-
+        time += deltat
 
 
 def motion_drag(data):
     """
-    Create animation for projectile motion with no dragging force
+    Create animation for projectile motion with dragging force
     """
-    pass
+    ball_nd = sphere(radius=1, color=color.blue, make_trail=True)
+    # Follow the movement of the ball
+    scene.camera.follow(ball_nd)
+
+    # Initial Values
+    beta = data['beta']
+    deltat = data['deltat']
+    theta = radians(data['theta'])
+    time = 0  # Starting Time
+    velocity = data['init_velocity']
+
+    # Set initial velocity & position
+    ball_nd.velocity = vector(velocity * cos(theta),  # Initial X velocity
+                              velocity * sin(theta), 0)  # Initial Y velocity
+    ball_nd.pos = vector(-25, data['init_height'], 0)  # Initial ball position
+
+    # Animate
+    while ball_nd.pos.y >= 0:
+        rate(1000)
+
+        velocity = sqrt(ball_nd.velocity.x ** 2 + ball_nd.velocity.y ** 2)  # Sets current velocity
+
+        fx = 1 - beta * velocity * deltat  # Force of x
+        fy = (-beta * ball_nd.velocity.y * velocity + data['gravity']) * deltat  # Force of y
+
+        ball_nd.velocity.x = ball_nd.velocity.x * fx  # Velocity with drag
+        ball_nd.velocity.y = ball_nd.velocity.y + fy  # Velocity with drag
+
+        ball_nd.pos = ball_nd.pos + ball_nd.velocity * deltat  # Updates ball position
+
+        time += deltat  # Updates time
 
 
 def main():
@@ -98,7 +125,7 @@ def main():
     # 2) No Drag Animation
     motion_no_drag(data)
     # 3) Drag Animation
-    #     motion_drag(data)
+    motion_drag(data)
     # 4) Plot Information: extra credit
     #     plot_data(data)
 
