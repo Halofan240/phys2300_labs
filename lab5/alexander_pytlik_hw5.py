@@ -15,7 +15,7 @@ def set_scene(data):
     """
     scene.title = "Assignment 5: Projectile motion"
     scene.width = 800
-    scene.heigth = 600
+    scene.height = 600
     scene.caption = """Right button drag or Ctrl-drag to rotate "camera" to view scene.
     To zoom, drag with middle button or Alt/Option depressed, or use scroll wheel.
     On a two-button mouse, middle is left + right.
