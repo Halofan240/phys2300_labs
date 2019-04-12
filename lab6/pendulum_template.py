@@ -112,6 +112,8 @@ def main():
         r, t = rk4(r, t, dt)
 
         # Update positions
+        # x = l * np.sin(r[0])
+        # y = rod.pos.y - l * np.cos(r[0])
         x = l * np.sin(r[0])
         y = rod.pos.y - l * np.cos(r[0])
 
