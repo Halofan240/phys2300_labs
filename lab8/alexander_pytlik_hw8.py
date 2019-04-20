@@ -237,7 +237,7 @@ def main():
     # 3) Drag Animation
     motion_drag(data)
 
-    # Current Doesnt Work
+    # Currently Doesnt Work
     # 4) Plot Information: extra credit
     # plot_data(data)
 
