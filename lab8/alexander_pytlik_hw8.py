@@ -13,7 +13,7 @@ def set_scene(data):
     :param data: Contains the constants and x and y coordinates for both drag and no drag
     :return:
     """
-    scene.title = "Assignment 5: Projectile motion"
+    scene.title = "Assignment 8: Projectile motion with bounce"
     scene.width = 800
     scene.height = 600
     scene.caption = """Right button drag or Ctrl-drag to rotate "camera" to view scene.
@@ -59,25 +59,39 @@ def motion_no_drag(data):
     acceleration = vector(0, force / mass, 0)  # Acceleration of ball
 
     # Animate
-    while ball_nd.pos.y >= 0:
-        rate(1000)
+    t = 0
+    tmax = 10
+    while ball_nd.velocity.y >= 0:
+        while ball_nd.pos.y >= 0:
+            rate(1000)
 
-        # Stores the new x and y values
+            # Stores the new x and y values
+            data['no_drag_x'].append(ball_nd.pos.x)
+            data['no_drag_y'].append(ball_nd.pos.y)
+
+            # Sets the new velocity of the ball and updates the position
+            ball_nd.velocity = ball_nd.velocity + acceleration * deltat
+            ball_nd.pos = ball_nd.pos + ball_nd.velocity * deltat
+
+        # Get the x value when y = 0 of the projectile
+        ft = data['no_drag_y'][-2] / (data['no_drag_y'][-2] - data['no_drag_y'][-1])  # fractional time to last point
+        ball_nd.pos.x = data['no_drag_x'][-2] + (data['no_drag_x'][-1] - data['no_drag_x'][-2]) * ft
+        ball_nd.pos.y = 0.
+
+        # Appends the final x and y coordinates of no drag
         data['no_drag_x'].append(ball_nd.pos.x)
         data['no_drag_y'].append(ball_nd.pos.y)
 
-        # Sets the new velocity of the ball and updates the position
-        ball_nd.velocity = ball_nd.velocity + acceleration * deltat
-        ball_nd.pos = ball_nd.pos + ball_nd.velocity * deltat
+        if ball_nd.velocity.y <= 0:
+            if ball_nd.velocity.x <= .5 and ball_nd.velocity.y >= -.1:
+                break
+            ball_nd.velocity.y = -ball_nd.velocity.y
+            # ball_nd.pos.y = ball_nd.pos.y + ball_nd.velocity.y
 
-    # Get the x value when y = 0 of the projectile
-    ft = data['no_drag_y'][-2] / (data['no_drag_y'][-2] - data['no_drag_y'][-1])  # fractional time to last point
-    ball_nd.pos.x = data['no_drag_x'][-2] + (data['no_drag_x'][-1] - data['no_drag_x'][-2]) * ft
-    ball_nd.pos.y = 0.
+        if t == tmax:
+            break
 
-    # Appends the final x and y coordinates of no drag
-    data['no_drag_x'].append(ball_nd.pos.x)
-    data['no_drag_y'].append(ball_nd.pos.y)
+        t += 1
 
 
 def motion_drag(data):
@@ -109,32 +123,40 @@ def motion_drag(data):
     data['with_drag_y'].append(ball_nd.pos.y)
 
     # Animate
-    while ball_nd.pos.y >= 0:
-        rate(1000)
+    while ball_nd.velocity.y >= 0:
+        while ball_nd.pos.y >= 0:
+            rate(1000)
 
-        # Formula to add drag to projectile motion
-        fx = 1 - beta * velocity * deltat  # Force of x
-        fy = (-beta * ball_nd.velocity.y * velocity + data['gravity']) * deltat  # Force of y
+            # Formula to add drag to projectile motion
+            fx = 1 - beta * velocity * deltat  # Force of x
+            fy = (-beta * ball_nd.velocity.y * velocity + data['gravity']) * deltat  # Force of y
 
-        ball_nd.velocity.x = ball_nd.velocity.x * fx  # Velocity with drag
-        ball_nd.velocity.y = ball_nd.velocity.y + fy  # Velocity with drag
+            ball_nd.velocity.x = ball_nd.velocity.x * fx  # Velocity with drag
+            ball_nd.velocity.y = ball_nd.velocity.y + fy  # Velocity with drag
 
-        # Appends x and y to plot
+            # Appends x and y to plot
+            data['with_drag_x'].append(ball_nd.pos.x)
+            data['with_drag_y'].append(ball_nd.pos.y)
+
+            # Sets new velocity and updates x and y position
+            velocity = sqrt(ball_nd.velocity.x ** 2 + ball_nd.velocity.y ** 2)  # Sets current velocity
+            ball_nd.pos = ball_nd.pos + ball_nd.velocity * deltat  # Updates ball position
+
+        # Get the x value when y = 0 of the projectile
+        ft = data['with_drag_y'][-2] / (
+                data['with_drag_y'][-2] - data['with_drag_y'][-1])  # fractional time to last point
+        ball_nd.pos.x = data['with_drag_x'][-2] + (data['with_drag_x'][-1] - data['with_drag_x'][-2]) * ft
+        ball_nd.pos.y = 0.
+
+        # Appends the final x and y coordinates of no drag
         data['with_drag_x'].append(ball_nd.pos.x)
         data['with_drag_y'].append(ball_nd.pos.y)
 
-        # Sets new velocity and updates x and y position
-        velocity = sqrt(ball_nd.velocity.x ** 2 + ball_nd.velocity.y ** 2)  # Sets current velocity
-        ball_nd.pos = ball_nd.pos + ball_nd.velocity * deltat  # Updates ball position
-
-    # Get the x value when y = 0 of the projectile
-    ft = data['with_drag_y'][-2] / (data['with_drag_y'][-2] - data['with_drag_y'][-1])  # fractional time to last point
-    ball_nd.pos.x = data['with_drag_x'][-2] + (data['with_drag_x'][-1] - data['with_drag_x'][-2]) * ft
-    ball_nd.pos.y = 0.
-
-    # Appends the final x and y coordinates of no drag
-    data['with_drag_x'].append(ball_nd.pos.x)
-    data['with_drag_y'].append(ball_nd.pos.y)
+        if ball_nd.velocity.y <= 0:
+            if ball_nd.velocity.x <= .5 and ball_nd.velocity.y >= -.1:
+                break
+            ball_nd.velocity.y = -ball_nd.velocity.y
+            # ball_nd.pos.y = ball_nd.pos.y + ball_nd.velocity.y
 
 
 def plot_data(data):
@@ -170,7 +192,7 @@ def plot_data(data):
 
 def main():
     """
-    PS G:> python .\lab5\alexander_pytlik_hw5.py --help
+    PS G:> python .\lab5\alexander_pytlik_hw8.py --help
     """
     # 1) Parse the arguments
     parser = argparse.ArgumentParser(description='Projectile Motion Demo')
@@ -208,12 +230,16 @@ def main():
 
     # Set Scene
     set_scene(data)
+
     # 2) No Drag Animation
-    motion_no_drag(data)
+    # motion_no_drag(data)
+
     # 3) Drag Animation
     motion_drag(data)
+
+    # Current Doesnt Work
     # 4) Plot Information: extra credit
-    plot_data(data)
+    # plot_data(data)
 
 
 if __name__ == "__main__":
